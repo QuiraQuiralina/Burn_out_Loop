@@ -1,0 +1,76 @@
+Burn_out_Loop - A VR experience
+
+
+////////Aesthetic and Art////////////
+
+The game takes place in an apartment, 3D, Low Poly
+    
+    
+ 3 different LUTs
+
+    Main LUT 
+        Noir, cartoonish, heavy contrast
+    CleanLUT
+        Pastel, Cartoonish, almost no contrast
+    Fire LUT
+        Monochrome, cartoonish, heavy contrast
+
+////////The game logic////////////// 
+
+Core Loop
+Q1
+    The user interacts with item in order to clean the room. 
+        When the user interacts with an item said item dissappears from the room and spawns 10 more in the other rooms.
+        When the user completes cleaning a room, the LUT goes from noir to pastel in that specific room only.
+           Repeats 2 times
+    END
+
+Q2
+    The user goes to study. Iteraction in this quest is the same as in the Q1.
+        When the user touches a book, 10 more appear, this time, next to him
+        The user has to place them in the library next to him. 
+            When the library is full Q2 is complete.
+
+Q3
+    The user interacts with the food in the kitchen. There's a hunger bar he needs to fill
+        User touches a food item and the rest around it dissappear.
+        User needs to interact with fridge and kitchen to cook
+            Repeats 10 to fill the bar
+
+Q4
+    The user needs to get in the shower. Then evvents happen in the following order
+        1- The water turns to fire
+        2- The whole apartment burns
+        3- The only water around is the bed that looks like a pool
+
+END
+ROLL CREDITS
+
+    bool_implemented=true // Existing and implemented Logic
+         Clutter.Spawner
+            (an object spawner that creates more instances of objects from a collection, when activated by the player)
+        RoomLights
+            (a script that makes a light render when the player is in the lights specified trigger volume)
+
+    bool_implemented=false //Functionality to be implemented
+        Book.Spawner
+        Shelve.Container
+
+        Food.Consume
+            - FOOD.Props.Trigger
+            - FOOD.Props.Dissappear
+        Food.Cook
+            - FOOD.Cooking.Ingredient
+            - FOOD.Cooking.Surface
+        Hunger.Bar
+            - 10 FOOD.Props.Trigger=100%
+
+    The burning scene
+
+        The shower head is a trigger
+            starts spilling Particle System
+            After 3 seconds there will be the FireLUT gradually taking over
+            There will be a fake health bar on top 
+                (that slowly runs out of time... actually it's a timer)
+            The only way to stop the timer (that dissappears on collision) is with the bed
+                 (that switches materials when the player interacts with the showerhead)
