@@ -60,12 +60,15 @@
         "*.asset": "yaml",
         "*.meta": "yaml",
         "*.prefab": "yaml",
-        "*.unity": "yaml",
+        "*.unity": "yaml"
     },
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Burn_out_Loop.slnx"
+    "dotnet.defaultSolution": "Burn_out_Loop.slnx",
+    "dotrush.roslyn.projectOrSolutionFiles": [
+        "d:\\Repository\\Burn_out_Loop\\The burnout Loop.slnx"
+    ]
 }
