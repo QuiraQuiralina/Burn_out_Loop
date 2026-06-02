@@ -3,7 +3,67 @@ guid: 09f26daafc7febd4bba4e41443e15312
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Caramida
+    second: {fileID: 2100000, guid: fd9ea2a51655f404bbffbb231e1d5c6d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Gresie
+    second: {fileID: 2100000, guid: d8d55f1860990fd4cbacccf2de6d9e4a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Gresie.Centru
+    second: {fileID: 2100000, guid: d74871d725e563f459c8025f9e49751b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material Happy
+    second: {fileID: 2100000, guid: 262b7bd991e69f1428f887f1ca65d2e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material Happy Gold
+    second: {fileID: 2100000, guid: 3d6fb67e6692dd54787aefe683671bcc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material Happy noir
+    second: {fileID: 2100000, guid: 612d3a76548489c4183e175333b47ce8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal Plates
+    second: {fileID: 2100000, guid: 434b5ebc136b03546a78bffe029a6e40, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Scanduri
+    second: {fileID: 2100000, guid: 4b799ce802e3d834b9466c008a75ea1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Snow
+    second: {fileID: 2100000, guid: 9914b4aff4c431d45a53434b7b7e8340, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Stylized water
+    second: {fileID: 2100000, guid: 263f4f75faa66074c8ba83b6047b7ae0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Var
+    second: {fileID: 2100000, guid: 39c24dceaa3bddf41971e1df70a396c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood Plain
+    second: {fileID: 2100000, guid: eb8f16a37d2357948a82087e9e48bcf7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
