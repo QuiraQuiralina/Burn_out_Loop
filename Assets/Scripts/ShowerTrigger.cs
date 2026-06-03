@@ -9,10 +9,10 @@ public class ShowerTrigger : MonoBehaviour
     public static ShowerTrigger Instance { get; private set; }
 
     [Header("Particle Systems")]
-    [Tooltip("The water particle system.")]
-    public ParticleSystem waterParticles;
-    [Tooltip("The fire particle system.")]
-    public ParticleSystem fireParticles;
+    [Tooltip("The water particle systems.")]
+    public ParticleSystem[] waterParticles;
+    [Tooltip("The fire particle systems.")]
+    public ParticleSystem[] fireParticles;
 
     [Header("Post Processing Volume")]
     [Tooltip("The global URP volume with the monochrome/high-contrast Fire LUT profile.")]
@@ -41,6 +41,7 @@ public class ShowerTrigger : MonoBehaviour
     private float timeRemaining;
     private bool isTimerRunning = false;
     private bool isTriggered = false;
+    private Coroutine normalWaterCoroutine;
 
     private void Awake()
     {
@@ -58,8 +59,20 @@ public class ShowerTrigger : MonoBehaviour
     private void Start()
     {
         // Initial setup: turn off systems
-        if (waterParticles != null) waterParticles.Stop();
-        if (fireParticles != null) fireParticles.Stop();
+        if (waterParticles != null)
+        {
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Stop();
+            }
+        }
+        if (fireParticles != null)
+        {
+            foreach (var ps in fireParticles)
+            {
+                if (ps != null) ps.Stop();
+            }
+        }
         if (timerPanel != null) timerPanel.SetActive(false);
         if (fireVolume != null) fireVolume.weight = 0f;
 
@@ -74,45 +87,114 @@ public class ShowerTrigger : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
-            TriggerShower();
+            // Check if Quest 4 is active
+            bool isQuest4Active = false;
+            if (GameManager.Instance != null && GameManager.Instance.questStateController != null)
+            {
+                isQuest4Active = (GameManager.Instance.questStateController.CurrentQuest is Quest4ShowerState);
+            }
+
+            if (isQuest4Active)
+            {
+                // Start climax sequence
+                isTriggered = true;
+                if (normalWaterCoroutine != null)
+                {
+                    StopCoroutine(normalWaterCoroutine);
+                    normalWaterCoroutine = null;
+                }
+                Debug.Log("[ShowerTrigger] Quest 4 active. Climax sequence started! Water turning to fire in 15 seconds.");
+                StartCoroutine(ShowerSequenceRoutine());
+            }
+            else
+            {
+                // Play normal shower water
+                StartNormalWater();
+            }
         }
     }
 
-    /// <summary>
-    /// Activates the shower sequence.
-    /// Can be wired directly to selection triggers in the editor.
-    /// </summary>
-    public void TriggerShower()
+    private void OnTriggerExit(Collider other)
     {
-        if (isTriggered) return;
-        isTriggered = true;
+        if (isTriggered) return; // If climax has started, don't stop water on exit
 
-        Debug.Log("[ShowerTrigger] Shower activated. Water turning to fire! Health countdown running on wrist.");
-        StartCoroutine(ShowerSequenceRoutine());
+        if (other.CompareTag("Player"))
+        {
+            StopNormalWater();
+        }
+    }
+
+    private void StartNormalWater()
+    {
+        if (normalWaterCoroutine != null)
+        {
+            StopCoroutine(normalWaterCoroutine);
+        }
+        normalWaterCoroutine = StartCoroutine(NormalWaterRoutine());
+    }
+
+    private void StopNormalWater()
+    {
+        if (normalWaterCoroutine != null)
+        {
+            StopCoroutine(normalWaterCoroutine);
+            normalWaterCoroutine = null;
+        }
+        if (waterParticles != null)
+        {
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Stop();
+            }
+        }
+    }
+
+    private IEnumerator NormalWaterRoutine()
+    {
+        if (waterParticles != null)
+        {
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Play();
+            }
+        }
+        // Auto-shutoff after 15 seconds
+        yield return new WaitForSeconds(15.0f);
+
+        if (waterParticles != null)
+        {
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Stop();
+            }
+        }
+        normalWaterCoroutine = null;
     }
 
     private IEnumerator ShowerSequenceRoutine()
     {
-        // 1. Spill water particle system
+        // 1. Spill water particle systems immediately
         if (waterParticles != null)
         {
-            waterParticles.Play();
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Play();
+            }
         }
 
-        // 2. Wait 3 seconds
-        yield return new WaitForSeconds(3.0f);
+        // 2. Wait 15 seconds
+        yield return new WaitForSeconds(15.0f);
 
-        // Replace water particles with fire/flames
-        if (waterParticles != null)
-        {
-            waterParticles.Stop();
-        }
+        // 3. Start fire particles (run alongside water for another 15s)
         if (fireParticles != null)
         {
-            fireParticles.Play();
+            foreach (var ps in fireParticles)
+            {
+                if (ps != null) ps.Play();
+            }
         }
 
-        Debug.Log("[ShowerTrigger] Water turned to fire! Fading in FireLUT and swapping bed material.");
+        Debug.Log("[ShowerTrigger] Water turning to fire! Fading in FireLUT and swapping bed cover mesh.");
 
         // Trigger Fire LUT transition
         if (fireVolume != null && PostProcessingManager.Instance != null)
@@ -120,7 +202,7 @@ public class ShowerTrigger : MonoBehaviour
             PostProcessingManager.Instance.BlendVolume(fireVolume, 1.0f, fireLutFadeDuration);
         }
 
-        // Swap bed objects
+        // Swap bed cover objects
         if (normalBedObject != null)
         {
             normalBedObject.SetActive(false);
@@ -132,6 +214,19 @@ public class ShowerTrigger : MonoBehaviour
 
         // Start countdown timer
         StartCountdown();
+
+        // 4. Run both water and fire together for another 15 seconds
+        yield return new WaitForSeconds(15.0f);
+
+        // 5. Stop water particles (only fire remains)
+        if (waterParticles != null)
+        {
+            foreach (var ps in waterParticles)
+            {
+                if (ps != null) ps.Stop();
+            }
+        }
+        Debug.Log("[ShowerTrigger] Water stopped. Only fire particles remaining.");
     }
 
     private void StartCountdown()

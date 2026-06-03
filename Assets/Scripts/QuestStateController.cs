@@ -13,6 +13,8 @@ public class QuestStateController : MonoBehaviour
 
     public event Action<QuestBase> OnQuestTransitioned;
     public event Action OnAllQuestsCompleted;
+    public event Action<QuestBase> OnQuestStarted;
+    public event Action<QuestBase> OnQuestEnded;
 
     /// <summary>
     /// Starts the quest loop from the beginning.
@@ -45,6 +47,7 @@ public class QuestStateController : MonoBehaviour
         if (CurrentQuest != null)
         {
             CurrentQuest.EndQuest();
+            OnQuestEnded?.Invoke(CurrentQuest);
         }
 
         currentQuestIndex++;
@@ -54,6 +57,7 @@ public class QuestStateController : MonoBehaviour
             QuestBase nextQuest = quests[currentQuestIndex];
             Debug.Log($"[QuestStateController] Transitioning to quest: {nextQuest.questDescription}");
             nextQuest.BeginQuest();
+            OnQuestStarted?.Invoke(nextQuest);
             OnQuestTransitioned?.Invoke(nextQuest);
         }
         else
