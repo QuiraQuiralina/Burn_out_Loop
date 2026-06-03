@@ -20,11 +20,11 @@ public class ShowerTrigger : MonoBehaviour
     [Tooltip("Fading duration for the Fire LUT transition.")]
     public float fireLutFadeDuration = 3f;
 
-    [Header("Bed Materials")]
-    [Tooltip("The Renderer of the bed object.")]
-    public Renderer bedRenderer;
-    [Tooltip("The blue water/pool material to swap to.")]
-    public Material waterPoolMaterial;
+    [Header("Bed Mesh Swap")]
+    [Tooltip("The normal bed GameObject (e.g. MESH_DORMITOR_Plapuma_SNOW).")]
+    public GameObject normalBedObject;
+    [Tooltip("The water bed GameObject (e.g. MESH_DORMITOR_Plapuma_APA).")]
+    public GameObject waterBedObject;
 
     [Header("Timer HUD UI")]
     [Tooltip("The parent UI panel for the timer/health countdown on the wrist HUD.")]
@@ -62,6 +62,10 @@ public class ShowerTrigger : MonoBehaviour
         if (fireParticles != null) fireParticles.Stop();
         if (timerPanel != null) timerPanel.SetActive(false);
         if (fireVolume != null) fireVolume.weight = 0f;
+
+        // Ensure proper bed states on start
+        if (normalBedObject != null) normalBedObject.SetActive(true);
+        if (waterBedObject != null) waterBedObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -116,10 +120,14 @@ public class ShowerTrigger : MonoBehaviour
             PostProcessingManager.Instance.BlendVolume(fireVolume, 1.0f, fireLutFadeDuration);
         }
 
-        // Swap bed material to blue water/pool
-        if (bedRenderer != null && waterPoolMaterial != null)
+        // Swap bed objects
+        if (normalBedObject != null)
         {
-            bedRenderer.material = waterPoolMaterial;
+            normalBedObject.SetActive(false);
+        }
+        if (waterBedObject != null)
+        {
+            waterBedObject.SetActive(true);
         }
 
         // Start countdown timer

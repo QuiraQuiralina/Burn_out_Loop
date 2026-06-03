@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BedRecoveryTrigger : MonoBehaviour
 {
@@ -33,7 +34,7 @@ public class BedRecoveryTrigger : MonoBehaviour
         if (isRecovered) return;
         isRecovered = true;
 
-        Debug.Log("[BedRecovery] Bed collision detected! Player safe. Loading credits...");
+        Debug.Log("[BedRecovery] Bed collision detected! Player safe.");
 
         // Stop timer
         if (ShowerTrigger.Instance != null)
@@ -41,26 +42,41 @@ public class BedRecoveryTrigger : MonoBehaviour
             ShowerTrigger.Instance.StopTimer();
         }
 
-        // Hide wrist HUD
+        // Hide wrist HUD if assigned
         if (GameManager.Instance != null && GameManager.Instance.wristHUDCanvas != null)
         {
             GameManager.Instance.wristHUDCanvas.gameObject.SetActive(false);
         }
 
-        // Show Credits Canvas
-        if (creditsCanvas != null)
+        // Check playthrough loop count
+        if (GameManager.playthroughCount < 3)
         {
-            creditsCanvas.SetActive(true);
+            GameManager.playthroughCount++;
+            Debug.Log($"[BedRecovery] Playthrough loop completed. Loading playthrough {GameManager.playthroughCount}/3...");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
         else
         {
-            Debug.LogError("[BedRecovery] creditsCanvas is not assigned!");
-        }
+            Debug.Log("[BedRecovery] Final playthrough (3/3) completed. Rolling credits!");
+            
+            // Reset playthrough count for future runs
+            GameManager.playthroughCount = 1;
 
-        // Complete Quest 4
-        if (Quest4ShowerState.Instance != null)
-        {
-            Quest4ShowerState.Instance.CompleteQuest();
+            // Show Credits Canvas
+            if (creditsCanvas != null)
+            {
+                creditsCanvas.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("[BedRecovery] creditsCanvas is not assigned!");
+            }
+
+            // Complete Quest 4
+            if (Quest4ShowerState.Instance != null)
+            {
+                Quest4ShowerState.Instance.CompleteQuest();
+            }
         }
     }
 }

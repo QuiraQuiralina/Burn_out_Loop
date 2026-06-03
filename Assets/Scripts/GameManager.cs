@@ -5,6 +5,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Playthrough Config")]
+    [Tooltip("The current playthrough loop count (1 to 3).")]
+    public static int playthroughCount = 1;
+
     [Header("State Controller")]
     public QuestStateController questStateController;
 
@@ -41,6 +45,8 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         InitializeWristHUD();
+
+        Debug.Log($"[GameManager] Starting Playthrough: {playthroughCount}/3");
 
         if (questStateController != null)
         {

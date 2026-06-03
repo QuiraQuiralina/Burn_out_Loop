@@ -19,6 +19,12 @@ public class QuestStateController : MonoBehaviour
     /// </summary>
     public void StartQuests()
     {
+        if (quests == null || quests.Length == 0)
+        {
+            quests = GetComponents<QuestBase>();
+            Debug.Log($"[QuestStateController] Automatically populated quests from components. Count: {quests.Length}");
+        }
+
         currentQuestIndex = -1;
         TransitionToNextQuest();
     }
