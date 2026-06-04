@@ -3,9 +3,12 @@ using UnityEngine.SceneManagement;
 
 public class BedRecoveryTrigger : MonoBehaviour
 {
-    [Header("Credits Settings")]
-    [Tooltip("The credits canvas in World Space to activate when player reaches the bed.")]
-    public GameObject creditsCanvas;
+    [Header("WebGL Escape Configuration")]
+    [Tooltip("The front door GameObject to disable/open on playthrough 3.")]
+    public GameObject frontDoorObject;
+
+    [Tooltip("The ExitTrigger GameObject to enable/activate on playthrough 3.")]
+    public GameObject exitTriggerObject;
 
     private bool isRecovered = false;
 
@@ -42,12 +45,6 @@ public class BedRecoveryTrigger : MonoBehaviour
             ShowerTrigger.Instance.StopTimer();
         }
 
-        // Hide wrist HUD if assigned
-        if (GameManager.Instance != null && GameManager.Instance.wristHUDCanvas != null)
-        {
-            GameManager.Instance.wristHUDCanvas.gameObject.SetActive(false);
-        }
-
         // Check playthrough loop count
         if (GameManager.playthroughCount < 3)
         {
@@ -57,25 +54,32 @@ public class BedRecoveryTrigger : MonoBehaviour
         }
         else
         {
-            Debug.Log("[BedRecovery] Final playthrough (3/3) completed. Rolling credits!");
-            
-            // Reset playthrough count for future runs
-            GameManager.playthroughCount = 1;
+            Debug.Log("[BedRecovery] Final playthrough (3/3) bed recovery. Unlocking exit door!");
 
-            // Show Credits Canvas
-            if (creditsCanvas != null)
+            // Open front door
+            if (frontDoorObject != null)
             {
-                creditsCanvas.SetActive(true);
+                frontDoorObject.SetActive(false);
             }
             else
             {
-                Debug.LogError("[BedRecovery] creditsCanvas is not assigned!");
+                Debug.LogWarning("[BedRecovery] frontDoorObject is not assigned!");
             }
 
-            // Complete Quest 4
-            if (Quest4ShowerState.Instance != null)
+            // Enable exit trigger
+            if (exitTriggerObject != null)
             {
-                Quest4ShowerState.Instance.CompleteQuest();
+                exitTriggerObject.SetActive(true);
+            }
+            else
+            {
+                Debug.LogWarning("[BedRecovery] exitTriggerObject is not assigned!");
+            }
+
+            // Update status text
+            if (GameManager.Instance != null && GameManager.Instance.questStatusText != null)
+            {
+                GameManager.Instance.questStatusText.text = "Escape through the front door!";
             }
         }
     }

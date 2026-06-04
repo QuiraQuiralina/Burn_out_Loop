@@ -133,7 +133,7 @@ To recover energy, the player must cook and eat food items. The hunger status ba
     *   When the food is consumed (brought close to the player's face trigger or grabbed and clicked):
         1.  Increases hunger by 10% on the `HungerBarManager`.
         2.  Finds all other nearby food items/props using `Physics.OverlapSphere` and calls a smooth scale-down fade to make them disappear.
-    *   Once hunger reaches 100% (after eating 10 times), Quest 3 completes.
+        3.  Once hunger reaches 100% (after eating 10 times), Quest 3 completes.
 
 ---
 
@@ -213,8 +213,6 @@ Coordinates shower water-to-fire particles, Fire LUT blend, and wrist countdown 
 Detects bed collision, terminates the timer, and fades in the final Credits.
 
 ---
-
-## Verification Plan
 
 ### C# Compiler & Unity Assembly Checks
 *   Verify that all C# scripts compile with zero compile errors or warnings.

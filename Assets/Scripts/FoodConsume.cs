@@ -59,8 +59,8 @@ public class FoodConsume : MonoBehaviour
         {
             if (col.gameObject == gameObject) continue;
 
-            // Only dissolve other food items or ingredients
-            bool isFoodOrIngredient = col.GetComponent<FoodConsume>() != null || col.GetComponent<FoodIngredient>() != null;
+            // Only dissolve other food items
+            bool isFoodOrIngredient = col.GetComponent<FoodConsume>() != null;
 
             if (isFoodOrIngredient)
             {

@@ -12,19 +12,6 @@ public class GameManager : MonoBehaviour
     [Header("State Controller")]
     public QuestStateController questStateController;
 
-    [Header("VR Hand HUD Setup")]
-    [Tooltip("The canvas UI panel to mount onto the player hand.")]
-    public RectTransform wristHUDCanvas;
-
-    [Tooltip("The target hand transform to anchor/parent the wrist HUD to.")]
-    public Transform targetHandAnchor;
-
-    [Tooltip("Local position offset relative to target hand anchor.")]
-    public Vector3 localPositionOffset = Vector3.zero;
-
-    [Tooltip("Local rotation offset relative to target hand anchor.")]
-    public Vector3 localRotationOffset = Vector3.zero;
-
     [Header("HUD UI Elements")]
     [Tooltip("Text element displaying current quest status.")]
     public TextMeshProUGUI questStatusText;
@@ -44,8 +31,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        InitializeWristHUD();
-
         Debug.Log($"[GameManager] Starting Playthrough: {playthroughCount}/3");
 
         if (questStateController != null)
@@ -60,16 +45,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void InitializeWristHUD()
-    {
-        if (wristHUDCanvas != null && targetHandAnchor != null)
-        {
-            Debug.Log("[GameManager] Initializing Hand-Parented Quest UI Panel.");
-            wristHUDCanvas.SetParent(targetHandAnchor, false);
-            wristHUDCanvas.localPosition = localPositionOffset;
-            wristHUDCanvas.localRotation = Quaternion.Euler(localRotationOffset);
-        }
-    }
+
 
     private void UpdateHUD(QuestBase currentQuest)
     {

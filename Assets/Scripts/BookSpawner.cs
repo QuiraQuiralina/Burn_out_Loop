@@ -55,9 +55,10 @@ public class BookSpawner : MonoBehaviour
         }
 
         Vector3 centerPos = transform.position;
-        if (GameManager.Instance != null && GameManager.Instance.targetHandAnchor != null)
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
         {
-            centerPos = GameManager.Instance.targetHandAnchor.position;
+            centerPos = player.transform.position;
         }
 
         for (int i = 0; i < 10; i++)
