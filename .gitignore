@@ -76,3 +76,8 @@ crashlytics-build.properties
 
 # Ignore all zip archives
 *.zip
+
+# Ignored Vegetation Stylized Pack
+/Assets/Vegetation_Stylized_Pack_ByLuxArtStudios/
+/Assets/Vegetation_Stylized_Pack_ByLuxArtStudios.meta
+
