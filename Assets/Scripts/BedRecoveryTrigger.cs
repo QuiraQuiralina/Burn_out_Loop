@@ -59,7 +59,19 @@ public class BedRecoveryTrigger : MonoBehaviour
             // Open front door
             if (frontDoorObject != null)
             {
-                frontDoorObject.SetActive(false);
+                Animator anim = frontDoorObject.GetComponent<Animator>();
+                if (anim == null) anim = frontDoorObject.GetComponentInChildren<Animator>();
+
+                if (anim != null)
+                {
+                    anim.SetTrigger("Open");
+                    Debug.Log("[BedRecovery] Triggered 'Open' animation on front door.");
+                }
+                else
+                {
+                    frontDoorObject.SetActive(false);
+                    Debug.Log("[BedRecovery] No Animator found. Disabled frontDoorObject directly.");
+                }
             }
             else
             {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class DesktopPlayerController : MonoBehaviour
@@ -25,7 +26,6 @@ public class DesktopPlayerController : MonoBehaviour
     public GameObject pauseUI;
 
     private CharacterController characterController;
-    private Vector3 moveDirection = Vector3.zero;
     private float rotationX = 0f;
     private float verticalVelocity = 0f;
     private bool isPaused = true;
@@ -44,6 +44,25 @@ public class DesktopPlayerController : MonoBehaviour
         if (playerCamera == null)
         {
             playerCamera = Camera.main;
+            if (playerCamera == null)
+            {
+                playerCamera = FindAnyObjectByType<Camera>();
+            }
+        }
+
+        if (playerCamera != null)
+        {
+            // Reparent the camera to the player GameObject
+            playerCamera.transform.SetParent(this.transform);
+            // Position camera at head height (1.6 units high) and align rotation
+            playerCamera.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+            playerCamera.transform.localRotation = Quaternion.identity;
+            // Tag it so Camera.main will resolve it correctly in other scripts
+            playerCamera.gameObject.tag = "MainCamera";
+        }
+        else
+        {
+            Debug.LogError("[DesktopPlayerController] No camera found in the scene!");
         }
 
         // Auto-create holdPoint if needed
@@ -62,10 +81,15 @@ public class DesktopPlayerController : MonoBehaviour
 
     private void Update()
     {
+        var keyboard = Keyboard.current;
+        var mouse = Mouse.current;
+
+        if (keyboard == null || mouse == null) return;
+
         // Toggle Pause/Resume via Enter and Escape
         if (isPaused)
         {
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame)
             {
                 SetPauseState(false);
             }
@@ -73,7 +97,7 @@ public class DesktopPlayerController : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (keyboard.escapeKey.wasPressedThisFrame)
             {
                 SetPauseState(true);
                 return;
@@ -84,8 +108,13 @@ public class DesktopPlayerController : MonoBehaviour
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
-        float curSpeedX = moveSpeed * Input.GetAxis("Vertical");
-        float curSpeedY = moveSpeed * Input.GetAxis("Horizontal");
+        float curSpeedX = 0f;
+        if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) curSpeedX += moveSpeed;
+        if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) curSpeedX -= moveSpeed;
+
+        float curSpeedY = 0f;
+        if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) curSpeedY += moveSpeed;
+        if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) curSpeedY -= moveSpeed;
 
         if (characterController.isGrounded)
         {
@@ -101,19 +130,23 @@ public class DesktopPlayerController : MonoBehaviour
         characterController.Move(move * Time.deltaTime);
 
         // 2. Mouse Look
-        rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
+        Vector2 mouseDelta = mouse.delta.ReadValue();
+        float mouseX = mouseDelta.x * 0.05f * lookSpeed;
+        float mouseY = mouseDelta.y * 0.05f * lookSpeed;
+
+        rotationX -= mouseY;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
         playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
+        transform.rotation *= Quaternion.Euler(0, mouseX, 0);
 
         // 3. Interaction (E key)
-        if (Input.GetKeyDown(KeyCode.E))
+        if (keyboard.eKey.wasPressedThisFrame)
         {
             HandleInteraction();
         }
 
         // 4. Drop (G key)
-        if (Input.GetKeyDown(KeyCode.G) && carriedBook != null)
+        if (keyboard.gKey.wasPressedThisFrame && carriedBook != null)
         {
             DropBook();
         }
