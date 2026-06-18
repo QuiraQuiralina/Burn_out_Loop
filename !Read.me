@@ -17,7 +17,7 @@ The game takes place in an apartment, 3D, Low Poly
 
 ////////The game logic////////////// 
 
-Core Loop
+Core Loop - PART 1
 Q1
     The user interacts with item in order to clean the room. 
         When the user interacts with an item said item dissappears from the room and spawns 10 more in the other rooms.
@@ -43,27 +43,8 @@ Q4
         2- The whole apartment burns
         3- The only water around is the bed that looks like a pool
 
-END
-ROLL CREDITS
+END OF PART 1
 
-    bool_implemented=true // Existing and implemented Logic
-         Clutter.Spawner
-            (an object spawner that creates more instances of objects from a collection, when activated by the player)
-        RoomLights
-            (a script that makes a light render when the player is in the lights specified trigger volume)
-
-    bool_implemented=false //Functionality to be implemented
-        Book.Spawner
-        Shelve.Container
-
-        Food.Consume
-            - FOOD.Props.Trigger
-            - FOOD.Props.Dissappear
-        Food.Cook
-            - FOOD.Cooking.Ingredient
-            - FOOD.Cooking.Surface
-        Hunger.Bar
-            - 10 FOOD.Props.Trigger=100%
 
     The burning scene
 
@@ -74,3 +55,120 @@ ROLL CREDITS
                 (that slowly runs out of time... actually it's a timer)
             The only way to stop the timer (that dissappears on collision) is with the bed
                  (that switches materials when the player interacts with the showerhead)
+
+
+CORE LOOP - PART 2 (TO BE IMPLEMENTED)
+
+    Q1: ESCAPE  (triggers only on 3rd run)
+        -The user has to escape the apartment
+            (The doors are locked until the 3rd run)
+
+    Q2: EXPLORE 
+        - The user goes outside the apartment and explores the building
+            - The environment is colorized in the Pastel LUT
+            - The Garden has 2 sections
+                - POND - 
+                    - The user interacts with a koi fish and it spawns 10 more.
+                    - The user interacts with water lilies and it spawns 10 more.
+                - FOREST - 
+                    - The user interacts with a flower and it spawns 10 more.
+                    - The user interacts with a butterfly and it spawns 10 more.
+
+    Q3: The user needs to go swimming in the POND. 
+        - Interaction with the lake, after 10 seconds, it will trigger an event that rolls the game credits.
+        The credits are going to be an mp4 video file.
+
+ENDGAME
+
+    bool_implemented=true // Existing and implemented Logic
+        AudioManager.cs: 
+                - Singleton manager that handles all background music and sound effects.
+             It listens to the QuestStateController to play different entry and exit audio clips depending on the current quest and playthrough loop (making the audio more chaotic in later loops).
+
+        BedRecoveryTrigger.cs:
+            - Attached to the bed.
+            - It acts as the safe zone for the fiery shower sequence.
+            - When the player collides with it, it either increments the loop count and reloads the scene (loops 1 and 2),
+                 or opens the front door for the final escape (loop 3).
+
+        BookHelper.cs:
+            - A small utility script attached to individual book prefabs.
+            - It keeps track of which BookSocket the book is currently hovering over, allowing the book to snap into place when the player drops it.
+
+        BookSocket.cs:
+            - A trigger volume placed on the shelf.
+            - When a book with a BookHelper is dropped near it, this script takes control of the book, disables its physics, and smoothly interpolates (snaps) it into the correct position and rotation on the shelf.
+
+        BookSpawner.cs:
+            - Attached to the first interactive book on the desk.
+            - When touched, it triggers a dramatic event that spawns 10 more books in a radial circle around the player, emphasizing the overwhelm of studying.
+
+        ClutterSpawner.cs:
+            - Attached to trash/clutter objects.
+            - When the player picks one up, this script registers its collection, destroys the object, and maliciously spawns 10 more clutter instances randomly across other rooms to create an endless loop of cleaning.
+             (an object spawner that creates more instances of objects from a collection, when activated by the player)
+
+        DesktopPlayerController.cs: 
+            - The main first-person controller. Handles WASD movement, mouse look, gravity, UI pausing, and raycast interactions (picking up books, eating food, cleaning clutter). It acts as the player's hands and eyes.
+            
+        ExitTrigger.cs:
+             - Placed at the front door.
+             - Only accessible on the 3rd loop.
+             - When the player walks into it, it completes the final quest and triggers the end of the game event.
+
+        FoodConsume.cs:
+             - Attached to food items.
+             - When it collides with the player's face/camera trigger, it restores hunger via HungerBarManager.
+             - Crucially, it also finds any other nearby food items and dissolves/destroys them, forcing the player to constantly get more food.
+             
+            - FOOD.Props.Trigger
+            - FOOD.Props.Dissappear
+            
+        FoodCook.cs:
+             - Attached to the fridge/cooking station.
+             - When interacted with by the player, it simply spawns a new FoodConsume prefab at a designated spawn point.
+             
+             - FOOD.Cooking.Ingredient
+            - FOOD.Cooking.Surface
+
+        GameManager.cs: 
+            - The global Singleton that tracks the overall game state, specifically the playthroughCount (1 to 3). It initializes the quest sequence and updates the player's wrist HUD with the current quest description.
+            
+        HungerBarManager.cs: 
+            - A UI manager that controls the hunger slider on the player's screen during Quest 3. It provides methods to add hunger points or reset the bar entirely.
+            - 10 FOOD.Props.Trigger=100%
+
+        PostProcessingManager.cs: 
+            - A visual manager that allows smooth interpolation (blending) of Unity Universal Render Pipeline (URP) Post-Processing Volumes. Used to fade the screen to a Clean LUT after cleaning, or a Fire LUT during the shower.
+            
+        Quest1CleaningState.cs: 
+            - Logic for the first quest. It listens to all RoomClutterManagers in the scene. The quest only finishes when the required number of rooms (default 2) are completely devoid of clutter.
+
+        Quest2StudyState.cs: 
+            - Logic for the second quest. It activates the BookSpawner and listens to the ShelfContainer. The quest finishes when the shelf is completely filled with snapped books.
+
+        Quest3KitchenState.cs: 
+            - Logic for the third quest. It activates the fridge and hunger UI. The quest finishes when the player eats enough food to push the HungerBarManager to 100%.
+
+        Quest4ShowerState.cs: 
+            - Logic for the fourth quest. It simply activates the ShowerTrigger system. It waits for the ExitTrigger (on the 3rd loop) to tell it when the game is completely over.
+
+        QuestBase.cs: 
+            - The foundational abstract class for all quests. It defines standard methods (BeginQuest, UpdateQuest, EndQuest) and stores the quest's HUD description.
+
+        QuestStateController.cs: 
+            - The manager responsible for holding the array of QuestBase scripts. It transitions linearly from Quest 1 to Quest 4, firing events that the AudioManager and GameManager listen to.
+
+        RoomClutterManager.cs: 
+            - Placed in every room. It keeps a hashset of all active ClutterSpawner objects currently inside that room. When its count hits 0, it tells the PostProcessingManager to fade the room to a bright, clean visual state.
+
+        RoomLights.cs: 
+            - A simple trigger script. When the player walks into its volume, it turns on an array of assigned Unity Light components, and turns them off when the player leaves.
+            (a script that makes a light render when the player is in the lights specified trigger volume)
+        ShelfContainer.cs: 
+            - Placed on the bookshelf. It counts how many books have been snapped into its child BookSockets. When the count reaches its totalSlots, it fires an event to complete Quest 2.
+
+        ShowerTrigger.cs: 
+            - The climatic script attached to the shower. It handles the 15-second delay where normal water turns into fiery particles. It triggers the PostProcessingManager's Fire LUT, swaps the bed to a water bed, and starts the 30-second death countdown timer on the UI.
+
+            bool_implemented=false //Functionality to be implemented

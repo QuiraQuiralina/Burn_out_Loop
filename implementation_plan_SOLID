@@ -1,0 +1,121 @@
+# Implementation Plan: SOLID Architecture Refactor (Revised)
+
+This updated plan incorporates your feedback: utilizing Unity's recommended ScriptableObject Event Channels, handling everything in the same scene, adding the `StartSwimming()` method to the Garden state, and providing a comprehensive flowchart and explanation for the omitted Shower scripts.
+
+## User Review Required
+
+> [!IMPORTANT]
+> Please review the expanded details, especially the newly added flowchart for the Shower/Bed sequence and the detailed, action-by-action breakdown in Phase 3. If everything looks correct, give me the green light to begin executing this plan!
+
+---
+
+## 1. High-Level Game State Machine
+We replace `GameManager` with a `GameStateMachine`. Because the transition to the garden happens in the **same scene**, the State Machine will manage turning features on/off without loading screens.
+
+```mermaid
+classDiagram
+    class GameStateMachine {
+        - IGameState currentState
+        + ChangeState(IGameState newState)
+    }
+    class IGameState {
+        <<interface>>
+        + Enter()
+        + Tick()
+        + Exit()
+    }
+    class Part1ApartmentState {
+        - int currentLoop
+        + HandleBedRecovery()
+    }
+    class Part2GardenState {
+        + StartExploration()
+        + StartSwimming()
+    }
+
+    GameStateMachine --> IGameState
+    IGameState <|.. Part1ApartmentState
+    IGameState <|.. Part2GardenState
+```
+
+---
+
+## 2. Event-Driven Communication (Scriptable Objects)
+
+We will use ScriptableObject Event Channels (Unity's recommended approach). This entirely removes the need for `Instance` singletons.
+
+### **Example 1: Food & Hunger Refactor**
+```mermaid
+flowchart LR
+    A[FoodConsume.cs] -->|Raises| B((FloatEventChannel.asset))
+    C[HungerBarManager.cs] -->|Listens to| B
+```
+*Explanation:* `FoodConsume` no longer calls `HungerBarManager.Instance`. It triggers a global ScriptableObject event. `HungerBarManager` catches it.
+
+### **Example 2: Shower, Bed, and Quest 4 Refactor**
+Previously, these scripts were tightly bound with singletons (`ShowerTrigger.Instance.StopTimer()`). Here is the refactored, decoupled flow:
+
+```mermaid
+flowchart TD
+    subgraph Triggers
+    A[ShowerTrigger.cs]
+    B[BedRecoveryTrigger.cs]
+    end
+
+    subgraph Event Channels
+    E1((OnShowerStarted Event))
+    E2((OnBedRecovered Event))
+    end
+
+    subgraph Managers & States
+    C[Quest4ShowerState.cs]
+    D[PostProcessingManager.cs]
+    F[Part1ApartmentState.cs]
+    end
+
+    C -->|Raises| E1
+    E1 -->|Listens| A
+    E1 -->|Listens| D
+    
+    B -->|Raises| E2
+    E2 -->|Listens| A
+    E2 -->|Listens| F
+```
+
+*Explanation of Actions for Shower/Bed:*
+1. When `Quest4ShowerState` begins, it raises `OnShowerStarted`.
+2. `ShowerTrigger` listens to this event to turn on the water and start the countdown. `PostProcessingManager` listens to fade in the Fire LUT.
+3. When the player hits the bed, `BedRecoveryTrigger` raises `OnBedRecovered`.
+4. `ShowerTrigger` listens to `OnBedRecovered` to stop its own timer.
+5. `Part1ApartmentState` listens to `OnBedRecovered` to either reset the loop (Loops 1-2-3) or transition to `Part2GardenState` (a continuation of loop 3...).
+
+---
+
+## 3. Step-by-Step Action Plan
+
+I will execute the refactoring in the following exact sequence, ensuring every action is deliberately explained.
+
+### Phase 1: Infrastructure Setup
+1. **Create Event Channel Scripts**: Create `VoidEventChannelSO.cs`, `FloatEventChannelSO.cs`, and `QuestEventChannelSO.cs`.
+2. **Create Event Assets**: Instantiate the ScriptableObjects in the `Assets/Scripts/Events` folder (e.g., `OnFoodConsumed`, `OnBedRecovered`, `OnRoomCleaned`).
+3. **Create State Machine**: Write `GameStateMachine.cs`, `IGameState.cs`, `Part1ApartmentState.cs`, and `Part2GardenState.cs`.
+
+### Phase 2: Refactoring Singletons (The "Cleanup")
+1. **`GameManager.cs`**: Delete this script entirely. Its responsibilities are moving to `GameStateMachine` and `Part1ApartmentState`.
+2. **`AudioManager.cs`**: Remove `Instance`. Add inspector fields for `QuestEventChannelSO`s (`OnQuestStarted`, `OnQuestEnded`) so it can play music reactively.
+3. **`HungerBarManager.cs`**: Remove `Instance`. Inject `FloatEventChannelSO OnFoodConsumed` via the inspector. Subscribe to it in `OnEnable()`.
+4. **`PostProcessingManager.cs`**: Remove `Instance`. Subscribe to `OnRoomCleaned` and `OnShowerStarted` events to trigger LUT fades automatically.
+
+### Phase 3: Decoupling Quest & Trigger Logic
+1. **`QuestStateController.cs`**: Remove direct references to `GameManager`. It will now be driven by `Part1ApartmentState`.
+2. **`FoodConsume.cs`**: Replace `HungerBarManager.Instance.AddHunger()` with `OnFoodConsumedEvent.Raise()`.
+3. **`ShowerTrigger.cs` & `Quest4ShowerState.cs`**: 
+   - Remove `ShowerTrigger.Instance`.
+   - Update `ShowerTrigger` to listen for the `OnBedRecovered` event to execute `StopTimer()`.
+   - Update `Quest4ShowerState` to fire `OnShowerStarted` instead of directly enabling the `showerSystem` GameObject.
+4. **`BedRecoveryTrigger.cs`**: Remove the hardcoded `GameManager.playthroughCount` check. Have it simply `OnBedRecoveredEvent.Raise()`. The `Part1ApartmentState` will catch this and handle the looping logic.
+
+### Phase 4: Implementing Part 2 (Garden)
+1. **`NatureSpawner.cs`**: Create a generic script that duplicates the `ClutterSpawner` logic but for Koi, Lilies, Flowers, and Butterflies. It will raise an `OnNatureInteracted` event.
+2. **`DesktopPlayerController.cs`**: Add raycast support to detect `NatureSpawner` components.
+3. **`PondTrigger.cs`**: Create the script that calls `StartSwimming()` on the `Part2GardenState`, waits 10 seconds, and activates the final Video Player for credits.
