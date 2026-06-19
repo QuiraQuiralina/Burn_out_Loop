@@ -36,6 +36,14 @@ Instead of a VR wrist UI, the UI Canvas is configured as a **Screen Space - Over
 
 ## Feature-by-Feature Changes
 
+### Feature 0: Desktop Debug Menu
+Before implementing the full quest flow, we need a robust debug menu for rapid testing in the desktop/WebGL environment.
+- **Debug UI Panel**: An overlay panel toggled via a specific key (e.g., `F1` or `Tab`).
+- **Functionality**: Buttons to skip directly to specific quests (Q1, Q2, Q3, Q4) and to reset the scene.
+- **Mouse Interaction**: When the debug menu is opened, the cursor is unlocked (`CursorLockMode.None`) so the user can click the buttons. When closed, it locks again if the game is active.
+
+---
+
 ### Feature 1: SDK Obliteration (First Phase)
 All folders, assets, and configurations relating to Oculus, Meta, and XR plugins are deleted from the project to avoid compilation errors on non-Android build platforms.
 
@@ -113,6 +121,8 @@ A new script representing the first-person browser player:
 These are the exact scripts that will be created or modified under `Assets/Scripts/`:
 
 ### Architecture & Managers
+#### [NEW] [DebugManager.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/DebugManager.cs)
+Handles toggling the debug UI panel, unlocking the cursor, and forcing quest state transitions for testing.
 #### [MODIFY] [GameManager.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/GameManager.cs)
 Remove all VR hand-parenting properties, offsets, and wrist-HUD positioning functions.
 #### [MODIFY] [BedRecoveryTrigger.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/BedRecoveryTrigger.cs)

@@ -50,6 +50,18 @@ graph TD
 
 ## Feature-by-Feature Implementation & Steps
 
+### Feature 0: VR Debug Menu (Testing & Progression)
+To facilitate rapid testing in VR without playing through the entire loop every time, we will implement a robust, togglable Debug Menu.
+
+*   **Step 0.1: Debug UI Canvas**
+    *   Create a world-space UI canvas parented to the player or spawned in front of them when toggled.
+    *   Add buttons to: Skip to Quest 1, Skip to Quest 2, Skip to Quest 3, Skip to Quest 4, and Reset Scene.
+*   **Step 0.2: Debug Manager**
+    *   Create `DebugManager.cs` which listens for a specific VR controller input (e.g., long-pressing a menu button or thumbstick) to toggle the menu's visibility.
+    *   Connect the UI buttons to the `QuestStateController` to force-start specific quests.
+
+---
+
 ### Feature 1: Core Framework (Managers & Hand UI)
 We will establish the central game state, hand-controller parenting systems, and smooth Post-Processing faders.
 
@@ -183,6 +195,8 @@ State controller managing active `QuestBase` states and transitions.
 Manages game startup, player hand transforms, and parents the Quest UI panel to the hand.
 #### [NEW] [PostProcessingManager.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/PostProcessingManager.cs)
 Performs smooth, high-performance URP volume weight fades.
+#### [NEW] [DebugManager.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/DebugManager.cs)
+Handles the toggling and logic of the VR Debug Menu to skip quests and test features rapidly.
 
 ### Quest 1 (Cleaning)
 #### [MODIFY] [ClutterSpawner.cs](file:///d:/Repository/Burn_out_Loop/Assets/Scripts/ClutterSpawner.cs)
